@@ -64,8 +64,7 @@ Scores are written to a named Docker volume (`catfish-data`) and survive contain
 ### Updating
 
 ```bash
-docker compose pull   # or rebuild if using a local image
-docker compose up -d --force-recreate
+docker compose down && docker compose up -d
 ```
 
 ---
