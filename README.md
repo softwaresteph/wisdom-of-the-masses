@@ -61,21 +61,6 @@ Tired of being the one who has to collect everyone's scores? Run the tracker as 
 
 Scores are written to a named Docker volume (`catfish-data`) and survive container restarts.
 
-### Configuration
-
-| Environment variable | Default | Description |
-|---|---|---|
-| `PORT` | `3000` | Port the server listens on inside the container |
-| `DATA_DIR` | `/data` | Directory where `scores.json` is stored |
-| `SERVER_URL` | `/api` | URL prefix for the API — set this if the app is served under a subpath (e.g. `/catfish-tracker/api`) |
-
-Example with a subpath (e.g. behind a reverse proxy at `/catfish-tracker`):
-
-```yaml
-environment:
-  - SERVER_URL=/catfish-tracker/api
-```
-
 ### Updating
 
 ```bash
