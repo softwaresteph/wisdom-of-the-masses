@@ -82,7 +82,7 @@ Scores are stored by puzzle number, so every day lives side by side:
 
 ## Self-hosted Docker setup
 
-Want to share scores across multiple devices without touching a file? Run the included Node.js server in a Docker container.
+Tired of being the one who has to collect everyone's scores? Run the tracker as a server and let your friends enter their own — no file juggling, no copy-pasting, just paste and go.
 
 ### Prerequisites
 
