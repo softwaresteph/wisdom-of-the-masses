@@ -24,7 +24,7 @@ app.get(['/', '/catfish-tracker', '/catfish-tracker/'], (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/scores', (req, res) => {
+app.get(SERVER_URL + '/scores', (req, res) => {
   try {
     if (!fs.existsSync(SCORES)) return res.json({});
     res.json(JSON.parse(fs.readFileSync(SCORES, 'utf8')));
@@ -33,7 +33,7 @@ app.get('/api/scores', (req, res) => {
   }
 });
 
-app.post('/api/scores', (req, res) => {
+app.post(SERVER_URL + '/scores', (req, res) => {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(SCORES, JSON.stringify(req.body, null, 2) + '\n', 'utf8');
