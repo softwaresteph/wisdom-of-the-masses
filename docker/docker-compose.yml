@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     environment:
       - SERVER_URL=/catfish-tracker/api
+      #- PORT=3000
+      #- DATA_DIR=/data
     volumes:
       - catfish-data:/data
     command: >
