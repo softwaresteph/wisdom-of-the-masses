@@ -16,7 +16,7 @@ const HTML_FILE = fs.existsSync(path.join(__dirname, 'public', 'index.html'))
   : path.join(__dirname, 'catfish-tracker.html');
 
 // Serve HTML with SERVER_URL auto-injected
-app.get('/', (req, res) => {
+app.get(['/', '/catfish-tracker', '/catfish-tracker/'], (req, res) => {
   let html = fs.readFileSync(HTML_FILE, 'utf8');
   html = html.replace("const SERVER_URL = null;", `const SERVER_URL = '${SERVER_URL}';`);
   res.type('html').send(html);
