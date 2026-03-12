@@ -232,6 +232,8 @@
   let currentData = {};
   let fileHandle  = null;
   const HAS_FSA   = typeof window.showOpenFilePicker === 'function';
+  // Set to '/api' for server mode. Injected automatically when served via Node.
+  const SERVER_URL = null;
 
   // --- IndexedDB: persist file handle across page loads ---
   function getDB() {
@@ -343,8 +345,28 @@
     event.target.value = '';
   }
 
+  // --- Server I/O ---
+  async function loadFromServer() {
+    const res = await fetch(SERVER_URL + '/scores');
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    currentData = await res.json();
+  }
+
+  async function saveToServer() {
+    const res = await fetch(SERVER_URL + '/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentData)
+    });
+    if (!res.ok) throw new Error('Server save failed: ' + res.status);
+  }
+
   // --- Unified save ---
   async function persist() {
+    if (SERVER_URL) {
+      await saveToServer();
+      return;
+    }
     if (HAS_FSA && fileHandle) {
       await saveToFile();
     }
@@ -356,6 +378,14 @@
   async function updateFileBar(fallbackName) {
     const label   = document.getElementById('file-label');
     const btnOpen = document.getElementById('btn-open-file');
+    if (SERVER_URL) {
+      label.textContent = '⚡ Server storage — changes sync automatically';
+      label.className   = 'file-label connected';
+      btnOpen.style.display = 'none';
+      document.getElementById('btn-import').style.display = 'none';
+      document.getElementById('btn-export').style.display = 'none';
+      return;
+    }
     if (HAS_FSA && fileHandle) {
       const perm = await fileHandle.queryPermission({ mode: 'readwrite' });
       if (perm === 'granted') {
@@ -556,6 +586,18 @@
 
   // --- Init ---
   async function init() {
+    if (SERVER_URL) {
+      updateFileBar();
+      try {
+        await loadFromServer();
+      } catch (e) {
+        showError('Could not load scores from server: ' + e.message);
+        currentData = {};
+      }
+      refreshSelect(sortedKeys(currentData)[0] || null);
+      render();
+      return;
+    }
     if (!HAS_FSA) {
       document.getElementById('btn-open-file').style.display = 'none';
       document.getElementById('btn-import').style.display    = 'inline-block';
