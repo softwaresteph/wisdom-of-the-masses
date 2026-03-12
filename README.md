@@ -36,50 +36,6 @@ This tracker lets you paste everyone's scores, then shows a **Group row** — co
 
 ---
 
-## How the group score works
-
-For each of the 10 questions:
-
-| Situation | Group gets |
-|---|---|
-| Anyone got a 🐈 | 🐈 — the group reeled it in |
-| Nobody got 🐈, but someone got 🥚 | 🥚 — close un oeuf |
-| Everyone got 🐟 | 🐟 — one that got away |
-
-The group score counts 🐈 as 1 point and 🥚 as 0.5 — just like the game itself.
-
----
-
-## File structure
-
-```
-catfish-tracker.html        ← open this in your browser
-scores-history/
-  scores.json               ← all scores, committed to the repo
-```
-
-Scores are stored by puzzle number, so every day lives side by side:
-
-```json
-{
-  "626": [ { "name": "Steph", "score": "5/10", "emojis": ["🐈", "🐟", ...] }, ... ],
-  "627": [ ... ]
-}
-```
-
----
-
-## Tips
-
-- **Switching days** — use the puzzle dropdown at the top of the Results section
-- **Made a mistake?** Hit ✕ next to any score to remove it
-- **Nuke a whole day** — use the "Delete day" button (it'll ask first, we're not animals)
-- **Browser restart?** The app remembers which file you had open and pre-navigates the picker back to it — one click and you're back in business
-- **👑 Crown** — the highest scorer of the day gets a 👑 next to their name (ties share it)
-- **🤓 Nerd badge** — if you're the only person who got a particular question right, your name gets a 🤓 next to it
-
----
-
 ## Self-hosted Docker setup
 
 Tired of being the one who has to collect everyone's scores? Run the tracker as a server and let your friends enter their own — no file juggling, no copy-pasting, just paste and go.
@@ -126,6 +82,50 @@ environment:
 docker compose pull   # or rebuild if using a local image
 docker compose up -d --force-recreate
 ```
+
+---
+
+## How the group score works
+
+For each of the 10 questions:
+
+| Situation | Group gets |
+|---|---|
+| Anyone got a 🐈 | 🐈 — the group reeled it in |
+| Nobody got 🐈, but someone got 🥚 | 🥚 — close un oeuf |
+| Everyone got 🐟 | 🐟 — one that got away |
+
+The group score counts 🐈 as 1 point and 🥚 as 0.5 — just like the game itself.
+
+---
+
+## File structure
+
+```
+catfish-tracker.html        ← open this in your browser
+scores-history/
+  scores.json               ← all scores, committed to the repo
+```
+
+Scores are stored by puzzle number, so every day lives side by side:
+
+```json
+{
+  "626": [ { "name": "Steph", "score": "5/10", "emojis": ["🐈", "🐟", ...] }, ... ],
+  "627": [ ... ]
+}
+```
+
+---
+
+## Tips
+
+- **Switching days** — use the puzzle dropdown at the top of the Results section
+- **Made a mistake?** Hit ✕ next to any score to remove it
+- **Nuke a whole day** — use the "Delete day" button (it'll ask first, we're not animals)
+- **Browser restart?** The app remembers which file you had open and pre-navigates the picker back to it — one click and you're back in business
+- **👑 Crown** — the highest scorer of the day gets a 👑 next to their name (ties share it)
+- **🤓 Nerd badge** — if you're the only person who got a particular question right, your name gets a 🤓 next to it
 
 ---
 
