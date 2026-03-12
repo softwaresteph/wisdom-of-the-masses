@@ -232,7 +232,8 @@
   let currentData = {};
   let fileHandle  = null;
   const HAS_FSA   = typeof window.showOpenFilePicker === 'function';
-  // Set to '/api' for server mode. Injected automatically when served via Node.
+  // In server mode, this is injected automatically as `${APP_PATH}/api`
+  // (i.e. `/api` at the root, or `<subpath>/api` when served behind a subpath).
   const SERVER_URL = null;
 
   // --- IndexedDB: persist file handle across page loads ---
