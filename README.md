@@ -80,4 +80,53 @@ Scores are stored by puzzle number, so every day lives side by side:
 
 ---
 
+## Self-hosted Docker setup
+
+Want to share scores across multiple devices without touching a file? Run the included Node.js server in a Docker container.
+
+### Prerequisites
+
+- Docker with the Compose plugin
+- A machine accessible on your network (or via a reverse proxy / Cloudflare Tunnel)
+
+### Quick start
+
+1. Download the compose file:
+   ```bash
+   curl -O https://raw.githubusercontent.com/softwaresteph/wisdom-of-the-masses/feature/server-persistence/docker/docker-compose.yml
+   ```
+
+2. Start the container:
+   ```bash
+   docker compose up -d
+   ```
+
+3. Open `http://localhost:3000` — the file bar will show **⚡ Server storage**.
+
+Scores are written to a named Docker volume (`catfish-data`) and survive container restarts.
+
+### Configuration
+
+| Environment variable | Default | Description |
+|---|---|---|
+| `PORT` | `3000` | Port the server listens on inside the container |
+| `DATA_DIR` | `/data` | Directory where `scores.json` is stored |
+| `SERVER_URL` | `/api` | URL prefix for the API — set this if the app is served under a subpath (e.g. `/catfish-tracker/api`) |
+
+Example with a subpath (e.g. behind a reverse proxy at `/catfish-tracker`):
+
+```yaml
+environment:
+  - SERVER_URL=/catfish-tracker/api
+```
+
+### Updating
+
+```bash
+docker compose pull   # or rebuild if using a local image
+docker compose up -d --force-recreate
+```
+
+---
+
 *May your group always catch every cat. 🐾*
