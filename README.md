@@ -67,7 +67,7 @@ Set environment variables in the compose file to customise the deployment:
 
 | Variable | Default | Description |
 |---|---|---|
-| `APP_PATH` | `` | Subpath the app is served at — set this if your reverse proxy forwards a subpath (e.g. `/catfish-tracker`) |
+| `APP_PATH` | *(empty)* | Subpath the app is served at — set this if your reverse proxy forwards a subpath (e.g. `/catfish-tracker`) |
 | `PORT` | `3000` | Port the server listens on inside the container |
 
 ### Updating
