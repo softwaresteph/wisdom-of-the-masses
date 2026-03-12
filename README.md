@@ -75,6 +75,8 @@ Scores are stored by puzzle number, so every day lives side by side:
 - **Made a mistake?** Hit ✕ next to any score to remove it
 - **Nuke a whole day** — use the "Delete day" button (it'll ask first, we're not animals)
 - **Browser restart?** The app remembers which file you had open and pre-navigates the picker back to it — one click and you're back in business
+- **👑 Crown** — the highest scorer of the day gets a 👑 next to their name (ties share it)
+- **🤓 Nerd badge** — if you're the only person who got a particular question right, your name gets a 🤓 next to it
 
 ---
 
