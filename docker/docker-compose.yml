@@ -2,7 +2,7 @@ services:
   catfish-tracker:
     image: node:20-alpine
     ports:
-      - "47822:3000"
+      - "3000:3000"
     restart: unless-stopped
     environment:
       - APP_PATH=/catfish-tracker
