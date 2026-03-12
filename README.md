@@ -92,7 +92,9 @@ The group score counts 🐈 as 1 point and 🥚 as 0.5 — just like the game it
 
 ---
 
-## File structure
+## File structure (local mode)
+
+When opening `catfish-tracker.html` directly in your browser, scores are saved alongside the file:
 
 ```
 catfish-tracker.html        ← open this in your browser
