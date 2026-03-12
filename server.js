@@ -4,16 +4,17 @@ const fs      = require('fs');
 const path    = require('path');
 
 const app      = express();
-const PORT     = process.env.PORT || 3000;
-const DATA_DIR = process.env.DATA_DIR || '/data';
-const SCORES   = path.join(DATA_DIR, 'scores.json');
+const PORT       = process.env.PORT || 3000;
+const DATA_DIR   = process.env.DATA_DIR || '/data';
+const SERVER_URL = process.env.SERVER_URL || '/api';
+const SCORES     = path.join(DATA_DIR, 'scores.json');
 
 app.use(express.json());
 
 // Serve HTML with SERVER_URL auto-injected
 app.get('/', (req, res) => {
   let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
-  html = html.replace("const SERVER_URL = null;", "const SERVER_URL = '/api';");
+  html = html.replace("const SERVER_URL = null;", `const SERVER_URL = '${SERVER_URL}';`);
   res.type('html').send(html);
 });
 
