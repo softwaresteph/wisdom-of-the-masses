@@ -233,22 +233,60 @@
   let fileHandle  = null;
   const HAS_FSA   = typeof window.showOpenFilePicker === 'function';
 
+  // --- IndexedDB: persist file handle across page loads ---
+  function getDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('catfish_tracker', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('handles');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+    });
+  }
+  async function saveHandleToIDB(handle) {
+    try {
+      const db = await getDB();
+      await new Promise((res, rej) => {
+        const tx = db.transaction('handles', 'readwrite');
+        tx.objectStore('handles').put(handle, 'scores');
+        tx.oncomplete = res;
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch {}
+  }
+  async function loadHandleFromIDB() {
+    try {
+      const db = await getDB();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction('handles', 'readonly');
+        const req = tx.objectStore('handles').get('scores');
+        req.onsuccess = () => res(req.result || null);
+        req.onerror   = () => rej(req.error);
+      });
+    } catch { return null; }
+  }
+
   // --- File access (File System Access API) ---
   async function openFile() {
     try {
       [fileHandle] = await window.showOpenFilePicker({
         types: [{ description: 'JSON scores file', accept: { 'application/json': ['.json'] } }],
-        multiple: false
+        multiple: false,
+        startIn: fileHandle || 'documents'
       });
-      const file = await fileHandle.getFile();
-      const text = await file.text();
-      currentData = text.trim() ? JSON.parse(text) : {};
-      updateFileBar();
-      refreshSelect(sortedKeys(currentData)[0] || null);
-      render();
+      await loadFromHandle();
+      await saveHandleToIDB(fileHandle);
     } catch (e) {
       if (e.name !== 'AbortError') showError('Could not open file: ' + e.message);
     }
+  }
+
+  async function loadFromHandle() {
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    currentData = text.trim() ? JSON.parse(text) : {};
+    updateFileBar();
+    refreshSelect(sortedKeys(currentData)[0] || null);
+    render();
   }
 
   async function saveToFile() {
@@ -304,13 +342,20 @@
   }
 
   // --- Update file bar UI ---
-  function updateFileBar(fallbackName) {
-    const label  = document.getElementById('file-label');
+  async function updateFileBar(fallbackName) {
+    const label   = document.getElementById('file-label');
     const btnOpen = document.getElementById('btn-open-file');
     if (HAS_FSA && fileHandle) {
-      label.textContent = '✓ ' + fileHandle.name;
-      label.className   = 'file-label connected';
-      btnOpen.textContent = '📂 Change file';
+      const perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        label.textContent   = '✓ ' + fileHandle.name;
+        label.className     = 'file-label connected';
+        btnOpen.textContent = '📂 Change file';
+      } else {
+        label.textContent   = fileHandle.name + ' — click to reconnect';
+        label.className     = 'file-label fallback';
+        btnOpen.textContent = '📂 Open scores.json';
+      }
     } else if (fallbackName) {
       label.textContent = fallbackName + ' (imported — use Export to save changes)';
       label.className   = 'file-label fallback';
@@ -487,22 +532,47 @@
   });
 
   // --- Init ---
-  (function init() {
+  async function init() {
     if (!HAS_FSA) {
-      // Show import/export fallback buttons, hide open button
       document.getElementById('btn-open-file').style.display = 'none';
       document.getElementById('btn-import').style.display    = 'inline-block';
       document.getElementById('btn-export').style.display    = 'inline-block';
       updateFileBar();
+      // Load from localStorage for fallback browsers
+      try {
+        const cached = localStorage.getItem('catfish_data');
+        if (cached) currentData = JSON.parse(cached);
+      } catch {}
+      refreshSelect(sortedKeys(currentData)[0] || null);
+      render();
+      return;
     }
-    // Load from localStorage as initial state (populated by previous sessions or import)
+
+    // Try to restore saved file handle and auto-load
+    const saved = await loadHandleFromIDB();
+    if (saved) {
+      const perm = await saved.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        // Permission already held — load silently
+        fileHandle = saved;
+        await loadFromHandle();
+        return;
+      } else {
+        // Have a handle but need to re-prompt — pre-populate so picker opens in same folder
+        fileHandle = saved;
+        updateFileBar(); // show the filename with a "reconnect" hint
+      }
+    }
+
+    // No auto-load — show initial state from localStorage backup
     try {
       const cached = localStorage.getItem('catfish_data');
       if (cached) currentData = JSON.parse(cached);
     } catch {}
     refreshSelect(sortedKeys(currentData)[0] || null);
     render();
-  })();
+  }
+  init();
 </script>
 </body>
 </html>
