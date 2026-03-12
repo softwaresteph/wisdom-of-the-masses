@@ -49,7 +49,7 @@ Tired of being the one who has to collect everyone's scores? Run the tracker as 
 
 1. Download the compose file:
    ```bash
-   curl -O https://raw.githubusercontent.com/softwaresteph/wisdom-of-the-masses/feature/server-persistence/docker/docker-compose.yml
+   curl -O https://raw.githubusercontent.com/softwaresteph/wisdom-of-the-masses/main/docker/docker-compose.yml
    ```
 
 2. Start the container:
