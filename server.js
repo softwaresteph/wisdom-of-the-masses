@@ -11,9 +11,13 @@ const SCORES     = path.join(DATA_DIR, 'scores.json');
 
 app.use(express.json());
 
+const HTML_FILE = fs.existsSync(path.join(__dirname, 'public', 'index.html'))
+  ? path.join(__dirname, 'public', 'index.html')
+  : path.join(__dirname, 'catfish-tracker.html');
+
 // Serve HTML with SERVER_URL auto-injected
 app.get('/', (req, res) => {
-  let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+  let html = fs.readFileSync(HTML_FILE, 'utf8');
   html = html.replace("const SERVER_URL = null;", `const SERVER_URL = '${SERVER_URL}';`);
   res.type('html').send(html);
 });
