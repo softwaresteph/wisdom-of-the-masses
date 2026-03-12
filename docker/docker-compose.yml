@@ -8,7 +8,7 @@ services:
       - catfish-data:/data
     command: >
       sh -c "apk add --no-cache git &&
-             rm -rf /repo && git clone -b main https://github.com/softwaresteph/wisdom-of-the-masses /repo &&
+             rm -rf /repo && git clone https://github.com/softwaresteph/wisdom-of-the-masses /repo &&
              cd /repo && npm install --omit=dev &&
              node server.js"
 
