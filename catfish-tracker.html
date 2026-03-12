@@ -267,6 +267,17 @@
 
   // --- File access (File System Access API) ---
   async function openFile() {
+    // If we already have a handle (e.g. after a page refresh), try to re-request
+    // permission before opening a new picker — this avoids having to re-select the file.
+    if (fileHandle) {
+      try {
+        const perm = await fileHandle.requestPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+          await loadFromHandle();
+          return;
+        }
+      } catch {}
+    }
     try {
       [fileHandle] = await window.showOpenFilePicker({
         types: [{ description: 'JSON scores file', accept: { 'application/json': ['.json'] } }],
