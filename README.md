@@ -61,6 +61,15 @@ Tired of being the one who has to collect everyone's scores? Run the tracker as 
 
 Scores are written to a named Docker volume (`catfish-data`) and survive container restarts.
 
+### Configuration
+
+Set environment variables in the compose file to customise the deployment:
+
+| Variable | Default | Description |
+|---|---|---|
+| `APP_PATH` | `` | Subpath the app is served at — set this if your reverse proxy forwards a subpath (e.g. `/catfish-tracker`) |
+| `PORT` | `3000` | Port the server listens on inside the container |
+
 ### Updating
 
 ```bash

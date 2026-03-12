@@ -4,6 +4,8 @@ services:
     ports:
       - "47822:3000"
     restart: unless-stopped
+    environment:
+      - APP_PATH=/catfish-tracker
     volumes:
       - catfish-data:/data
     command: >
