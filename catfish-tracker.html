@@ -365,7 +365,12 @@
   // --- Unified save ---
   async function persist() {
     if (SERVER_URL) {
-      await saveToServer();
+      try {
+        await saveToServer();
+      } catch (err) {
+        console.error(err);
+        showError('Could not save to server. Please check your connection and try again.');
+      }
       return;
     }
     if (HAS_FSA && fileHandle) {
