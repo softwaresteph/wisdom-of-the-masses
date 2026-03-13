@@ -1,0 +1,19 @@
+services:
+  catfish-tracker:
+    image: node:20-alpine
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - APP_PATH=/catfish-tracker
+    volumes:
+      - catfish-data:/data
+    command: >
+      sh -c "apk add --no-cache git &&
+             rm -rf /repo && git clone https://github.com/softwaresteph/wisdom-of-the-masses /repo &&
+             cd /repo && npm install --omit=dev &&
+             node server.js"
+
+volumes:
+  catfish-data:
+    driver: local
