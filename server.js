@@ -20,7 +20,11 @@ app.get(['/', APP_PATH, APP_PATH + '/'].filter(Boolean), (req, res) => {
   res.type('html').send(html);
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+const staticDir = path.join(__dirname, 'public');
+app.use(express.static(staticDir));
+if (APP_PATH) {
+  app.use(APP_PATH, express.static(staticDir));
+}
 
 app.get(['/api/scores', APP_PATH + '/api/scores'].filter(Boolean), (req, res) => {
   try {
