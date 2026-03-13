@@ -16,7 +16,7 @@ const HTML_FILE = fs.existsSync(path.join(__dirname, 'public', 'index.html'))
 
 app.get(['/', APP_PATH, APP_PATH + '/'].filter(Boolean), (req, res) => {
   let html = fs.readFileSync(HTML_FILE, 'utf8');
-  html = html.replace("const SERVER_URL = null;", `const SERVER_URL = '${APP_PATH}/api';`);
+  html = html.replace("const SERVER_URL = null;", "const SERVER_URL = " + JSON.stringify(APP_PATH + "/api") + ";");
   res.type('html').send(html);
 });
 
