@@ -477,7 +477,7 @@
     if (currentData[key].length === 0) delete currentData[key];
     await persist();
     const keys = sortedKeys(currentData);
-    refreshSelect(keys[0] || null);
+    refreshSelect(currentData[key] ? key : (keys[0] || null));
     render();
   }
 
@@ -548,7 +548,7 @@
         ${e.emojis.map(em => `<td>${em}</td>`).join('')}
         <td class="col-score">${e.score || '?'}</td>
         <td class="col-del">
-          <button class="btn-sm-danger" title="Remove" onclick="deleteEntry(${key}, ${JSON.stringify(e.name)})">✕</button>
+          <button class="btn-sm-danger" title="Remove" onclick="deleteEntry('${key}', ${JSON.stringify(e.name).replace(/"/g, '&quot;')})">✕</button>
         </td>
       </tr>`).join('');
 
