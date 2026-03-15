@@ -541,10 +541,12 @@
     const parseScore = s => s ? parseFloat(s) : 0;
     const topScore = Math.max(...entries.map(e => parseScore(e.score)));
     const kings = new Set(entries.filter(e => parseScore(e.score) === topScore).map(e => e.name));
+    const bottomScore = Math.min(...entries.map(e => parseScore(e.score)));
+    const peaches = new Set(entries.filter(e => parseScore(e.score) === bottomScore).map(e => e.name));
 
     const playerRows = entries.map(e => `
       <tr>
-        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}</td>
+        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}</td>
         ${e.emojis.map(em => `<td>${em}</td>`).join('')}
         <td class="col-score">${e.score || '?'}</td>
         <td class="col-del">
