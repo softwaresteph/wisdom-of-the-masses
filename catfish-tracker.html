@@ -172,6 +172,33 @@
     /* Hidden import input */
     #import-input { display: none; }
 
+    /* Update banner */
+    .update-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+    .update-banner a { color: #b45309; font-weight: 600; }
+    .update-banner button {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid #f59e0b;
+      background: white;
+      color: #92400e;
+      cursor: pointer;
+    }
+    .update-banner button:hover { background: #fef3c7; }
+
     @media (max-width: 500px) {
       .row { flex-direction: column; }
       td { font-size: 1rem; padding: 6px 3px; }
@@ -179,6 +206,13 @@
   </style>
 </head>
 <body>
+
+<div id="update-banner" style="display:none" class="update-banner">
+  🔔 Update available: <strong id="update-version"></strong>
+  <a id="update-release-link" href="#" target="_blank">Release notes</a>
+  <button id="update-btn" onclick="performUpdate()">Update now</button>
+  <span id="update-status"></span>
+</div>
 
 <h1>🎣 Catfishing Group Tracker</h1>
 
@@ -595,6 +629,55 @@
     if (e.key === 'Enter') document.getElementById('inp-score').focus();
   });
 
+  // --- Update check ---
+  async function checkForUpdate() {
+    try {
+      const res = await fetch(SERVER_URL + '/check-update');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.updateAvailable) {
+        document.getElementById('update-version').textContent = data.latestVersion;
+        document.getElementById('update-release-link').href = data.releaseUrl;
+        document.getElementById('update-banner').style.display = 'flex';
+      }
+    } catch {}
+  }
+
+  async function performUpdate() {
+    const btn    = document.getElementById('update-btn');
+    const status = document.getElementById('update-status');
+    btn.disabled = true;
+    btn.textContent = 'Downloading...';
+    status.textContent = '';
+
+    try {
+      const res = await fetch(SERVER_URL + '/update', { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json();
+        status.textContent = 'Error: ' + (err.error || res.status);
+        btn.disabled = false;
+        btn.textContent = 'Update now';
+        return;
+      }
+    } catch {
+      // Server went down — that's expected after process.exit(0)
+    }
+
+    status.textContent = 'Restarting...';
+    btn.textContent = 'Waiting...';
+
+    // Poll /api/health until the new container is up, then reload
+    const poll = setInterval(async () => {
+      try {
+        const res = await fetch(SERVER_URL + '/health');
+        if (res.ok) {
+          clearInterval(poll);
+          window.location.reload();
+        }
+      } catch {}
+    }, 3000);
+  }
+
   // --- Init ---
   async function init() {
     if (SERVER_URL) {
@@ -607,6 +690,7 @@
       }
       refreshSelect(sortedKeys(currentData)[0] || null);
       render();
+      checkForUpdate();
       return;
     }
     if (!HAS_FSA) {

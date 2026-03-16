@@ -1,12 +1,15 @@
 'use strict';
-const express = require('express');
-const fs      = require('fs');
-const path    = require('path');
+const express  = require('express');
+const fs       = require('fs');
+const path     = require('path');
+const https    = require('https');
+const Docker   = require('dockerode');
 
 const app      = express();
 const PORT     = process.env.PORT || 3000;
 const APP_PATH = process.env.APP_PATH || '';
 const SCORES   = path.join('/data', 'scores.json');
+const IMAGE    = 'ghcr.io/softwaresteph/wisdom-of-the-masses:latest';
 
 app.use(express.json());
 
@@ -43,6 +46,83 @@ app.post(['/api/scores', APP_PATH + '/api/scores'].filter(Boolean), (req, res) =
   } catch (e) {
     res.status(500).json({ error: 'Could not write scores: ' + e.message });
   }
+});
+
+app.get(['/api/health', APP_PATH + '/api/health'].filter(Boolean), (req, res) => {
+  res.json({ ok: true });
+});
+
+app.get(['/api/version', APP_PATH + '/api/version'].filter(Boolean), (req, res) => {
+  res.json({ version: process.env.APP_VERSION || 'unknown' });
+});
+
+let updateCache = null;
+let updateCacheTime = 0;
+const UPDATE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+app.get(['/api/check-update', APP_PATH + '/api/check-update'].filter(Boolean), (req, res) => {
+  const currentVersion = process.env.APP_VERSION || 'unknown';
+  if (currentVersion === 'unknown') {
+    return res.json({ updateAvailable: false, currentVersion });
+  }
+  const now = Date.now();
+  if (updateCache && (now - updateCacheTime) < UPDATE_CACHE_TTL) {
+    return res.json(updateCache);
+  }
+  const options = {
+    hostname: 'api.github.com',
+    path: '/repos/softwaresteph/wisdom-of-the-masses/releases/latest',
+    headers: { 'User-Agent': 'wisdom-of-the-masses-server' }
+  };
+  https.get(options, (ghRes) => {
+    let data = '';
+    ghRes.on('data', chunk => { data += chunk; });
+    ghRes.on('end', () => {
+      try {
+        const release = JSON.parse(data);
+        const latestVersion = release.tag_name;
+        const updateAvailable = latestVersion !== currentVersion;
+        updateCache = {
+          updateAvailable,
+          currentVersion,
+          latestVersion,
+          releaseUrl: release.html_url
+        };
+        updateCacheTime = now;
+        res.json(updateCache);
+      } catch (e) {
+        res.status(500).json({ error: 'Could not parse GitHub response: ' + e.message });
+      }
+    });
+  }).on('error', (e) => {
+    res.status(500).json({ error: 'Could not reach GitHub API: ' + e.message });
+  });
+});
+
+let updateInProgress = false;
+
+app.post(['/api/update', APP_PATH + '/api/update'].filter(Boolean), (req, res) => {
+  if (updateInProgress) {
+    return res.status(409).json({ error: 'Update already in progress' });
+  }
+  updateInProgress = true;
+
+  const docker = new Docker({ socketPath: '/var/run/docker.sock' });
+
+  docker.pull(IMAGE, (err, stream) => {
+    if (err) {
+      updateInProgress = false;
+      return res.status(500).json({ error: 'Pull failed: ' + err.message });
+    }
+    docker.modem.followProgress(stream, (err) => {
+      if (err) {
+        updateInProgress = false;
+        return res.status(500).json({ error: 'Pull failed: ' + err.message });
+      }
+      res.json({ ok: true, message: 'Image pulled. Restarting...' });
+      setTimeout(() => process.exit(0), 200);
+    });
+  });
 });
 
 app.listen(PORT, () => console.log('Listening on port ' + PORT));

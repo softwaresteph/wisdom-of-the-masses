@@ -1,0 +1,7 @@
+services:
+  catfish-tracker:
+    volumes:
+      - ../:/app
+      - catfish-data:/data
+    command: sh -c "cd /app && npm install --omit=dev && node server.js"
+    working_dir: /app
