@@ -442,6 +442,11 @@
     return `${n}/10`;
   }
 
+  function calcIndividualScore(emojis) {
+    const n = emojis.reduce((s, e) => s + (e === CAT ? 1 : e === EGG ? 0.5 : 0), 0);
+    return `${n}/10`;
+  }
+
   // --- Actions ---
   async function addScore() {
     const name = document.getElementById('inp-name').value.trim();
@@ -546,7 +551,7 @@
       <tr>
         <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}</td>
         ${e.emojis.map(em => `<td>${em}</td>`).join('')}
-        <td class="col-score">${e.score || '?'}</td>
+        <td class="col-score">${calcIndividualScore(e.emojis)}</td>
         <td class="col-del">
           <button class="btn-sm-danger" title="Remove" onclick="deleteEntry('${key}', ${JSON.stringify(e.name).replace(/"/g, '&quot;')})">✕</button>
         </td>
