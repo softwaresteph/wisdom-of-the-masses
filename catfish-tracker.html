@@ -539,12 +539,13 @@
       }
     }
 
-    // Players with the highest score
-    const parseScore = s => s ? parseFloat(s) : 0;
-    const topScore = Math.max(...entries.map(e => parseScore(e.score)));
-    const kings = entries.length > 1 ? new Set(entries.filter(e => parseScore(e.score) === topScore).map(e => e.name)) : new Set();
-    const bottomScore = Math.min(...entries.map(e => parseScore(e.score)));
-    const peaches = entries.length > 1 ? new Set(entries.filter(e => parseScore(e.score) === bottomScore).map(e => e.name)) : new Set();
+    // Players with the highest/lowest score
+    const numericScore = s => s ? parseFloat(s) : NaN;
+    const scored = entries.map(e => ({ name: e.name, value: numericScore(e.score) })).filter(e => isFinite(e.value));
+    const topScore = scored.length ? Math.max(...scored.map(e => e.value)) : NaN;
+    const bottomScore = scored.length ? Math.min(...scored.map(e => e.value)) : NaN;
+    const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
+    const peaches = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === bottomScore).map(e => e.name)) : new Set();
 
     const playerRows = entries.map(e => `
       <tr>
