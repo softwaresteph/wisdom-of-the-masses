@@ -532,19 +532,24 @@
 
     // Players who are the only one to get a particular question right
     const nerds = new Set();
-    for (let i = 0; i < 10; i++) {
-      const solos = entries.filter(e => e.emojis[i] === CAT);
-      if (solos.length === 1) nerds.add(solos[0].name);
+    if (entries.length > 1) {
+      for (let i = 0; i < 10; i++) {
+        const solos = entries.filter(e => e.emojis[i] === CAT);
+        if (solos.length === 1) nerds.add(solos[0].name);
+      }
     }
 
-    // Players with the highest score
-    const parseScore = s => s ? parseFloat(s) : 0;
-    const topScore = Math.max(...entries.map(e => parseScore(e.score)));
-    const kings = new Set(entries.filter(e => parseScore(e.score) === topScore).map(e => e.name));
+    // Players with the highest/lowest score
+    const numericScore = s => s ? parseFloat(s) : NaN;
+    const scored = entries.map(e => ({ name: e.name, value: numericScore(e.score) })).filter(e => isFinite(e.value));
+    const topScore = scored.length ? Math.max(...scored.map(e => e.value)) : NaN;
+    const bottomScore = scored.length ? Math.min(...scored.map(e => e.value)) : NaN;
+    const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
+    const peaches = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === bottomScore).map(e => e.name)) : new Set();
 
     const playerRows = entries.map(e => `
       <tr>
-        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}</td>
+        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}</td>
         ${e.emojis.map(em => `<td>${em}</td>`).join('')}
         <td class="col-score">${e.score || '?'}</td>
         <td class="col-del">
