@@ -83,7 +83,7 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(42,122,228,0.12);
     }
-    textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+    textarea { resize: vertical; min-height: calc(1.5em * 4 + 16px); line-height: 1.5; }
 
     /* Buttons */
     button {
@@ -177,7 +177,7 @@
     #import-input { display: none; }
 
     @media (max-width: 500px) {
-      .row { flex-direction: column; }
+      .row { flex-direction: column; align-items: stretch; }
       td { font-size: 1rem; padding: 6px 3px; }
       .btn-sm, .btn-sm-danger, .btn-sm-success, .btn-sm-cancel { padding: 4px 6px; }
     }
