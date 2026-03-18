@@ -540,8 +540,7 @@
     }
 
     // Players with the highest/lowest score
-    const numericScore = s => s ? parseFloat(s) : NaN;
-    const scored = entries.map(e => ({ name: e.name, value: numericScore(e.score) })).filter(e => isFinite(e.value));
+    const scored = entries.filter(e => e.emojis?.length).map(e => ({ name: e.name, value: e.emojis.reduce((s, em) => s + (em === CAT ? 1 : em === EGG ? 0.5 : 0), 0) }));
     const topScore = scored.length ? Math.max(...scored.map(e => e.value)) : NaN;
     const bottomScore = scored.length ? Math.min(...scored.map(e => e.value)) : NaN;
     const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
