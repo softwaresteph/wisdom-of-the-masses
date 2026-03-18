@@ -83,7 +83,8 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(42,122,228,0.12);
     }
-    textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+    textarea { resize: vertical; min-height: calc(1.5em * 4 + 16px); line-height: 1.5; }
+    textarea::placeholder { opacity: 0.5; }
 
     /* Buttons */
     button {
@@ -111,18 +112,19 @@
       background: transparent;
       color: var(--text);
     }
-    .btn-sm:hover { background: var(--bg); }
+    .btn-sm:hover { background: #d6d6d6; }
     .btn-sm-danger {
-      background: transparent;
-      border: none;
-      color: #bbb;
-      font-size: 0.85rem;
-      padding: 3px 7px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 4px;
-      line-height: 1;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
     }
-    .btn-sm-danger:hover { background: #fff0f0; color: var(--danger-text); }
+    .btn-sm-danger:hover { background: #fff0f0; color: var(--danger-text); border-color: var(--danger-text); }
     .btn-sm-red {
       background: transparent;
       border: 1px solid var(--border);
@@ -145,10 +147,11 @@
 
     /* Results table */
     .results-wrap { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
     th {
       text-align: center;
-      padding: 7px 6px;
+      padding: 0 15px;
+      height: 42px;
       font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -157,11 +160,13 @@
       border-bottom: 2px solid var(--border);
       white-space: nowrap;
     }
-    th.col-name { text-align: left; padding-left: 2px; }
-    td { padding: 7px 6px; text-align: center; font-size: 1.15rem; }
+    th.col-name { text-align: left; padding-left: 2px; width: 120px; }
+    td { padding: 0 15px; height: 42px; text-align: center; font-size: 1.15rem; vertical-align: middle; }
     td.col-name { text-align: left; font-weight: 600; font-size: 0.9rem; white-space: nowrap; padding-left: 2px; }
+    .col-score { width: 55px; }
     td.col-score { font-size: 0.82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
-    td.col-del { padding: 4px; }
+    .col-q { width: 48px; text-align: center; padding-left: 2px; padding-right: 2px; }
+    .col-del { padding: 4px; white-space: nowrap; width: 90px; }
     tbody tr:not(.group-row):hover td { background: var(--bg); }
     tr.group-row td { background: var(--group-bg); border-top: 2px solid var(--border); }
     tr.group-row td.col-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); }
@@ -173,9 +178,64 @@
     #import-input { display: none; }
 
     @media (max-width: 500px) {
-      .row { flex-direction: column; }
+      .row { flex-direction: column; align-items: stretch; }
       td { font-size: 1rem; padding: 6px 3px; }
+      .btn-sm, .btn-sm-danger, .btn-sm-success, .btn-sm-cancel { padding: 4px 6px; }
     }
+  /* --- Row edit mode --- */
+  .name-edit-input {
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 2px 6px;
+    width: 110px;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(42,122,228,0.12);
+  }
+  .emoji-select {
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 2px;
+    background: white;
+    cursor: pointer;
+    width: 2.8rem;
+  }
+  tr.editing-row td { background: #f0f6ff; }
+  tr.editing-row td:not(.col-q):not(.col-del) { padding-left: 6px; padding-right: 6px; }
+
+  .btn-sm:hover { background: #d6d6d6; }
+
+  .btn-sm-success {
+    background: #28a745;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .btn-sm-success:hover { background: #218838; }
+
+  .btn-sm-cancel {
+    background: #6c757d;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .btn-sm-cancel:hover { background: #5a6268; }
+
   </style>
 </head>
 <body>
@@ -202,7 +262,7 @@
     </div>
     <div class="form-group wide">
       <label for="inp-score">Paste share text</label>
-      <textarea id="inp-score" placeholder="e.g.&#10;#626 - 5/10&#10;🐈🐟🐟🐟🐈&#10;🐈🐈🐟🐈🐟"></textarea>
+      <textarea id="inp-score" placeholder="catfishing.net &#10;#626 - 5/10&#10;🐈🐟🐟🐟🐈&#10;🐈🐈🐟🐈🐟"></textarea>
     </div>
   </div>
   <div id="error-msg" class="error-msg"></div>
@@ -231,6 +291,7 @@
   // In-memory data + file handle
   let currentData = {};
   let fileHandle  = null;
+  let _editingRow = null; // { key, name } | null — tracks which row is in edit mode
   const HAS_FSA   = typeof window.showOpenFilePicker === 'function';
   // In server mode, this is injected automatically as `${APP_PATH}/api`
   // (i.e. `/api` at the root, or `<subpath>/api` when served behind a subpath).
@@ -527,8 +588,8 @@
     }
 
     const group  = calcGroupEmojis(entries);
-    const groupScore = calcScore(group);
-    const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th>Q${i + 1}</th>`).join('');
+    const gScore = calcScore(group);
+    const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th class="col-q">Q${i + 1}</th>`).join('');
 
     // Players who are the only one to get a particular question right
     const nerds = new Set();
@@ -546,27 +607,53 @@
     const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
     const peaches = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === bottomScore).map(e => e.name)) : new Set();
 
-    const playerRows = entries.map(e => `
-      <tr>
-        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}</td>
-        ${e.emojis.map(em => `<td>${em}</td>`).join('')}
-        <td class="col-score">${calcScore(e.emojis)}</td>
-        <td class="col-del">
-          <button class="btn-sm-danger" title="Remove" onclick="deleteEntry('${key}', ${JSON.stringify(e.name).replace(/"/g, '&quot;')})">✕</button>
-        </td>
-      </tr>`).join('');
+    const playerRows = entries.map(e => {
+      const nameJ = JSON.stringify(e.name).replace(/"/g, '&quot;');
+      const keyJ = JSON.stringify(key).replace(/"/g, '&quot;');
+      const isEditing = _editingRow && _editingRow.key === key && _editingRow.name === e.name;
+      const badges = `${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}`;
+
+      if (isEditing) {
+        const emojiCells = e.emojis.map(em =>
+          `<td class="col-q"><select class="emoji-select">${[CAT, EGG, FISH].map(opt =>
+            `<option value="${opt}"${opt === em ? ' selected' : ''}>${opt}</option>`
+          ).join('')}</select></td>`
+        ).join('');
+        return `
+          <tr data-edit-key="${esc(key)}" data-edit-name="${esc(e.name)}" class="editing-row">
+            <td class="col-name"><input class="name-edit-input" type="text" value="${esc(e.name)}"></td>
+            ${emojiCells}
+            <td class="col-score">${e.score || '?'}</td>
+            <td class="col-del">
+              <button class="btn-sm-success" title="Save" onclick="saveRowEdit(${keyJ}, ${nameJ})">✓</button>
+              <button class="btn-sm-cancel" title="Cancel" onclick="cancelRowEdit()">✕</button>
+            </td>
+          </tr>`;
+      }
+
+      return `
+        <tr>
+          <td class="col-name">${esc(e.name)}${badges}</td>
+          ${e.emojis.map(em => `<td class="col-q">${em}</td>`).join('')}
+          <td class="col-score">${e.score || '?'}</td>
+          <td class="col-del">
+            <button class="btn-sm" title="Edit" onclick="startRowEdit(${keyJ}, ${nameJ})">✏️</button>
+            <button class="btn-sm-danger" title="Remove" onclick="deleteEntry(${keyJ}, ${nameJ})">✕</button>
+          </td>
+        </tr>`;
+    }).join('');
 
     el.innerHTML = `
       <table>
         <thead><tr>
-          <th class="col-name">Player</th>${qHdrs}<th>Score</th><th></th>
+          <th class="col-name">Player</th>${qHdrs}<th class="col-score">Score</th><th class="col-del"></th>
         </tr></thead>
         <tbody>
           ${playerRows}
           <tr class="group-row">
             <td class="col-name">Group</td>
-            ${group.map(em => `<td>${em}</td>`).join('')}
-            <td class="col-score">${groupScore}</td>
+            ${group.map(em => `<td class="col-q">${em}</td>`).join('')}
+            <td class="col-score">${gScore}</td>
             <td></td>
           </tr>
         </tbody>
@@ -588,6 +675,57 @@
 
   function esc(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // --- Row edit mode ---
+  function startRowEdit(key, name) {
+    _editingRow = { key, name };
+    render();
+  }
+
+  function cancelRowEdit() {
+    _editingRow = null;
+    render();
+  }
+
+  function saveRowEdit(key, playerName) {
+    const entries = currentData[key] || [];
+    const entry = entries.find(e => e.name === playerName);
+    if (!entry) { render(); return; }
+
+    const row = document.querySelector(
+      `tr[data-edit-key="${CSS.escape(key)}"][data-edit-name="${CSS.escape(playerName)}"]`
+    );
+    if (!row) { render(); return; }
+
+    const nameInput = row.querySelector('.name-edit-input');
+    const newName = nameInput ? nameInput.value.trim() : playerName;
+
+    if (!newName) {
+      nameInput.style.borderColor = '#cc3333';
+      nameInput.focus();
+      return;
+    }
+
+    // Check for duplicate name (excluding self)
+    if (newName.toLowerCase() !== playerName.toLowerCase() &&
+        entries.some(e => e.name.toLowerCase() === newName.toLowerCase())) {
+      nameInput.style.borderColor = '#cc3333';
+      nameInput.title = `"${newName}" already exists for this puzzle`;
+      nameInput.focus();
+      return;
+    }
+
+    const selects = row.querySelectorAll('.emoji-select');
+    const newEmojis = Array.from(selects).map(s => s.value);
+
+    entry.name = newName;
+    entry.emojis = newEmojis;
+    entry.score = calcScore(newEmojis);
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+
+    _editingRow = null;
+    persist().then(() => render());
   }
 
   document.getElementById('inp-name').addEventListener('keydown', e => {
