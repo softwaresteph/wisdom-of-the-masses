@@ -84,6 +84,7 @@
       box-shadow: 0 0 0 3px rgba(42,122,228,0.12);
     }
     textarea { resize: vertical; min-height: calc(1.5em * 4 + 16px); line-height: 1.5; }
+    textarea::placeholder { opacity: 0.5; }
 
     /* Buttons */
     button {
@@ -261,7 +262,7 @@
     </div>
     <div class="form-group wide">
       <label for="inp-score">Paste share text</label>
-      <textarea id="inp-score" placeholder="e.g.&#10;#626 - 5/10&#10;🐈🐟🐟🐟🐈&#10;🐈🐈🐟🐈🐟"></textarea>
+      <textarea id="inp-score" placeholder="catfishing.net &#10;#626 - 5/10&#10;🐈🐟🐟🐟🐈&#10;🐈🐈🐟🐈🐟"></textarea>
     </div>
   </div>
   <div id="error-msg" class="error-msg"></div>
