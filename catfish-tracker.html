@@ -111,18 +111,19 @@
       background: transparent;
       color: var(--text);
     }
-    .btn-sm:hover { background: var(--bg); }
+    .btn-sm:hover { background: #d6d6d6; }
     .btn-sm-danger {
-      background: transparent;
-      border: none;
-      color: #bbb;
-      font-size: 0.85rem;
-      padding: 3px 7px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 4px;
-      line-height: 1;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
     }
-    .btn-sm-danger:hover { background: #fff0f0; color: var(--danger-text); }
+    .btn-sm-danger:hover { background: #fff0f0; color: var(--danger-text); border-color: var(--danger-text); }
     .btn-sm-red {
       background: transparent;
       border: 1px solid var(--border);
@@ -145,10 +146,11 @@
 
     /* Results table */
     .results-wrap { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
     th {
       text-align: center;
-      padding: 7px 6px;
+      padding: 0 15px;
+      height: 42px;
       font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -157,11 +159,12 @@
       border-bottom: 2px solid var(--border);
       white-space: nowrap;
     }
-    th.col-name { text-align: left; padding-left: 2px; }
-    td { padding: 7px 6px; text-align: center; font-size: 1.15rem; }
+    th.col-name { text-align: left; padding-left: 2px; width: 120px; }
+    td { padding: 0 15px; height: 42px; text-align: center; font-size: 1.15rem; vertical-align: middle; }
     td.col-name { text-align: left; font-weight: 600; font-size: 0.9rem; white-space: nowrap; padding-left: 2px; }
     td.col-score { font-size: 0.82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
-    td.col-del { padding: 4px; }
+    .col-q { width: 48px; text-align: center; padding-left: 2px; padding-right: 2px; }
+    .col-del { padding: 4px; white-space: nowrap; width: 90px; }
     tbody tr:not(.group-row):hover td { background: var(--bg); }
     tr.group-row td { background: var(--group-bg); border-top: 2px solid var(--border); }
     tr.group-row td.col-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); }
@@ -197,19 +200,23 @@
     padding: 1px 2px;
     background: white;
     cursor: pointer;
+    width: 2.8rem;
   }
   tr.editing-row td { background: #f0f6ff; }
+  tr.editing-row td:not(.col-q):not(.col-del) { padding-left: 6px; padding-right: 6px; }
 
-  .btn-sm:hover { background: var(--muted, #e0e0e0); }
+  .btn-sm:hover { background: #d6d6d6; }
 
   .btn-sm-success {
     background: #28a745;
     color: white;
     border: none;
-    border-radius: 5px;
-    padding: 2px 7px;
+    border-radius: 8px;
+    padding: 6px 12px;
     cursor: pointer;
     font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
   }
   .btn-sm-success:hover { background: #218838; }
 
@@ -217,10 +224,12 @@
     background: #6c757d;
     color: white;
     border: none;
-    border-radius: 5px;
-    padding: 2px 7px;
+    border-radius: 8px;
+    padding: 6px 12px;
     cursor: pointer;
     font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
   }
   .btn-sm-cancel:hover { background: #5a6268; }
 
@@ -577,7 +586,7 @@
 
     const group  = calcGroupEmojis(entries);
     const gScore = calcGroupScore(group);
-    const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th>Q${i + 1}</th>`).join('');
+    const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th class="col-q">Q${i + 1}</th>`).join('');
 
     // Players who are the only one to get a particular question right
     const nerds = new Set();
@@ -604,13 +613,13 @@
 
       if (isEditing) {
         const emojiCells = e.emojis.map(em =>
-          `<td><select class="emoji-select">${[CAT, EGG, FISH].map(opt =>
+          `<td class="col-q"><select class="emoji-select">${[CAT, EGG, FISH].map(opt =>
             `<option value="${opt}"${opt === em ? ' selected' : ''}>${opt}</option>`
           ).join('')}</select></td>`
         ).join('');
         return `
           <tr data-edit-key="${esc(key)}" data-edit-name="${esc(e.name)}" class="editing-row">
-            <td class="col-name"><input class="name-edit-input" type="text" value="${esc(e.name)}">${badges}</td>
+            <td class="col-name"><input class="name-edit-input" type="text" value="${esc(e.name)}"></td>
             ${emojiCells}
             <td class="col-score">${e.score || '?'}</td>
             <td class="col-del">
@@ -623,7 +632,7 @@
       return `
         <tr>
           <td class="col-name">${esc(e.name)}${badges}</td>
-          ${e.emojis.map(em => `<td>${em}</td>`).join('')}
+          ${e.emojis.map(em => `<td class="col-q">${em}</td>`).join('')}
           <td class="col-score">${e.score || '?'}</td>
           <td class="col-del">
             <button class="btn-sm" title="Edit" onclick="startRowEdit(${keyJ}, ${nameJ})">✏️</button>
@@ -635,13 +644,13 @@
     el.innerHTML = `
       <table>
         <thead><tr>
-          <th class="col-name">Player</th>${qHdrs}<th>Score</th><th></th>
+          <th class="col-name">Player</th>${qHdrs}<th>Score</th><th class="col-del"></th>
         </tr></thead>
         <tbody>
           ${playerRows}
           <tr class="group-row">
             <td class="col-name">Group</td>
-            ${group.map(em => `<td>${em}</td>`).join('')}
+            ${group.map(em => `<td class="col-q">${em}</td>`).join('')}
             <td class="col-score">${gScore}</td>
             <td></td>
           </tr>

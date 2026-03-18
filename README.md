@@ -117,6 +117,7 @@ Scores are stored by puzzle number, so every day lives side by side:
 
 - **Switching days** — use the puzzle dropdown at the top of the Results section
 - **Made a mistake?** Hit ✕ next to any score to remove it
+- **Edit a score** — click ✏️ next to any row to enter edit mode: fix the player's name and/or toggle individual emoji answers (🐈/🥚/🐟) via dropdowns, then hit ✓ to save or ✕ to cancel. The score recalculates automatically.
 - **Nuke a whole day** — use the "Delete day" button (it'll ask first, we're not animals)
 - **Browser restart?** The app remembers which file you had open and pre-navigates the picker back to it — one click and you're back in business
 - **👑 Crown** — the highest scorer of the day gets a 👑 next to their name (ties share it)
