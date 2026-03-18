@@ -64,3 +64,5 @@ The reason (readability, maintainability, etc.).
 
 **Chore**
 Plain description, no headings needed.
+
+If the PR resolves a GitHub issue, include `Closes #[issue number]` at the bottom of the PR body.
