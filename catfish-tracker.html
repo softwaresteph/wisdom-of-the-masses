@@ -176,6 +176,54 @@
       .row { flex-direction: column; }
       td { font-size: 1rem; padding: 6px 3px; }
     }
+  /* --- Row edit mode --- */
+  .name-edit-input {
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 2px 6px;
+    width: 110px;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(42,122,228,0.12);
+  }
+  .emoji-select {
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 2px;
+    background: white;
+    cursor: pointer;
+  }
+  tr.editing-row td { background: #f0f6ff; }
+
+  .btn-sm:hover { background: var(--muted, #e0e0e0); }
+
+  .btn-sm-success {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 7px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .btn-sm-success:hover { background: #218838; }
+
+  .btn-sm-cancel {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 7px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .btn-sm-cancel:hover { background: #5a6268; }
+
   </style>
 </head>
 <body>
@@ -231,6 +279,7 @@
   // In-memory data + file handle
   let currentData = {};
   let fileHandle  = null;
+  let _editingRow = null; // { key, name } | null — tracks which row is in edit mode
   const HAS_FSA   = typeof window.showOpenFilePicker === 'function';
   // In server mode, this is injected automatically as `${APP_PATH}/api`
   // (i.e. `/api` at the root, or `<subpath>/api` when served behind a subpath).
@@ -547,15 +596,41 @@
     const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
     const peaches = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === bottomScore).map(e => e.name)) : new Set();
 
-    const playerRows = entries.map(e => `
-      <tr>
-        <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}</td>
-        ${e.emojis.map(em => `<td>${em}</td>`).join('')}
-        <td class="col-score">${e.score || '?'}</td>
-        <td class="col-del">
-          <button class="btn-sm-danger" title="Remove" onclick="deleteEntry('${key}', ${JSON.stringify(e.name).replace(/"/g, '&quot;')})">✕</button>
-        </td>
-      </tr>`).join('');
+    const playerRows = entries.map(e => {
+      const nameJ = JSON.stringify(e.name).replace(/"/g, '&quot;');
+      const keyJ = JSON.stringify(key).replace(/"/g, '&quot;');
+      const isEditing = _editingRow && _editingRow.key === key && _editingRow.name === e.name;
+      const badges = `${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}`;
+
+      if (isEditing) {
+        const emojiCells = e.emojis.map(em =>
+          `<td><select class="emoji-select">${[CAT, EGG, FISH].map(opt =>
+            `<option value="${opt}"${opt === em ? ' selected' : ''}>${opt}</option>`
+          ).join('')}</select></td>`
+        ).join('');
+        return `
+          <tr data-edit-key="${esc(key)}" data-edit-name="${esc(e.name)}" class="editing-row">
+            <td class="col-name"><input class="name-edit-input" type="text" value="${esc(e.name)}">${badges}</td>
+            ${emojiCells}
+            <td class="col-score">${e.score || '?'}</td>
+            <td class="col-del">
+              <button class="btn-sm-success" title="Save" onclick="saveRowEdit(${keyJ}, ${nameJ})">✓</button>
+              <button class="btn-sm-cancel" title="Cancel" onclick="cancelRowEdit()">✕</button>
+            </td>
+          </tr>`;
+      }
+
+      return `
+        <tr>
+          <td class="col-name">${esc(e.name)}${badges}</td>
+          ${e.emojis.map(em => `<td>${em}</td>`).join('')}
+          <td class="col-score">${e.score || '?'}</td>
+          <td class="col-del">
+            <button class="btn-sm" title="Edit" onclick="startRowEdit(${keyJ}, ${nameJ})">✏️</button>
+            <button class="btn-sm-danger" title="Remove" onclick="deleteEntry(${keyJ}, ${nameJ})">✕</button>
+          </td>
+        </tr>`;
+    }).join('');
 
     el.innerHTML = `
       <table>
@@ -589,6 +664,57 @@
 
   function esc(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // --- Row edit mode ---
+  function startRowEdit(key, name) {
+    _editingRow = { key, name };
+    render();
+  }
+
+  function cancelRowEdit() {
+    _editingRow = null;
+    render();
+  }
+
+  function saveRowEdit(key, playerName) {
+    const entries = currentData[key] || [];
+    const entry = entries.find(e => e.name === playerName);
+    if (!entry) { render(); return; }
+
+    const row = document.querySelector(
+      `tr[data-edit-key="${CSS.escape(key)}"][data-edit-name="${CSS.escape(playerName)}"]`
+    );
+    if (!row) { render(); return; }
+
+    const nameInput = row.querySelector('.name-edit-input');
+    const newName = nameInput ? nameInput.value.trim() : playerName;
+
+    if (!newName) {
+      nameInput.style.borderColor = '#cc3333';
+      nameInput.focus();
+      return;
+    }
+
+    // Check for duplicate name (excluding self)
+    if (newName.toLowerCase() !== playerName.toLowerCase() &&
+        entries.some(e => e.name.toLowerCase() === newName.toLowerCase())) {
+      nameInput.style.borderColor = '#cc3333';
+      nameInput.title = `"${newName}" already exists for this puzzle`;
+      nameInput.focus();
+      return;
+    }
+
+    const selects = row.querySelectorAll('.emoji-select');
+    const newEmojis = Array.from(selects).map(s => s.value);
+
+    entry.name = newName;
+    entry.emojis = newEmojis;
+    entry.score = calcGroupScore(newEmojis);
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+
+    _editingRow = null;
+    persist().then(() => render());
   }
 
   document.getElementById('inp-name').addEventListener('keydown', e => {
