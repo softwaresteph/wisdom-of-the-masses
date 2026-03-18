@@ -498,7 +498,7 @@
     });
   }
 
-  function calcGroupScore(emojis) {
+  function calcScore(emojis) {
     const n = emojis.reduce((s, e) => s + (e === CAT ? 1 : e === EGG ? 0.5 : 0), 0);
     return `${n}/10`;
   }
@@ -588,7 +588,7 @@
     }
 
     const group  = calcGroupEmojis(entries);
-    const gScore = calcGroupScore(group);
+    const gScore = calcScore(group);
     const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th class="col-q">Q${i + 1}</th>`).join('');
 
     // Players who are the only one to get a particular question right
@@ -601,8 +601,7 @@
     }
 
     // Players with the highest/lowest score
-    const numericScore = s => s ? parseFloat(s) : NaN;
-    const scored = entries.map(e => ({ name: e.name, value: numericScore(e.score) })).filter(e => isFinite(e.value));
+    const scored = entries.filter(e => e.emojis?.length).map(e => ({ name: e.name, value: e.emojis.reduce((s, em) => s + (em === CAT ? 1 : em === EGG ? 0.5 : 0), 0) }));
     const topScore = scored.length ? Math.max(...scored.map(e => e.value)) : NaN;
     const bottomScore = scored.length ? Math.min(...scored.map(e => e.value)) : NaN;
     const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
@@ -722,7 +721,7 @@
 
     entry.name = newName;
     entry.emojis = newEmojis;
-    entry.score = calcGroupScore(newEmojis);
+    entry.score = calcScore(newEmojis);
     entries.sort((a, b) => a.name.localeCompare(b.name));
 
     _editingRow = null;
