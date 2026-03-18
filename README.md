@@ -122,7 +122,7 @@ Scores are stored by puzzle number, so every day lives side by side:
 - **Browser restart?** The app remembers which file you had open and pre-navigates the picker back to it — one click and you're back in business
 - **👑 Crown** — the highest scorer of the day gets a 👑 next to their name (ties share it)
 - **🤓 Nerd badge** — if you're the only person who got a particular question right, your name gets a 🤓 next to it
-- **🍑 Peach** — the lowest scorer of the day gets a 🍑 next to their name (ties share it)
+- **🍑 Peach** — the lowest scorer of the day gets a 🍑 next to their name (ties share it); if someone is both the highest and lowest scorer (e.g. everyone else tied), the 👑 takes priority and they don't get the 🍑
 
 ---
 
