@@ -162,6 +162,7 @@
     th.col-name { text-align: left; padding-left: 2px; width: 120px; }
     td { padding: 0 15px; height: 42px; text-align: center; font-size: 1.15rem; vertical-align: middle; }
     td.col-name { text-align: left; font-weight: 600; font-size: 0.9rem; white-space: nowrap; padding-left: 2px; }
+    .col-score { width: 55px; }
     td.col-score { font-size: 0.82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
     .col-q { width: 48px; text-align: center; padding-left: 2px; padding-right: 2px; }
     .col-del { padding: 4px; white-space: nowrap; width: 90px; }
@@ -178,6 +179,7 @@
     @media (max-width: 500px) {
       .row { flex-direction: column; }
       td { font-size: 1rem; padding: 6px 3px; }
+      .btn-sm, .btn-sm-danger, .btn-sm-success, .btn-sm-cancel { padding: 4px 6px; }
     }
   /* --- Row edit mode --- */
   .name-edit-input {
@@ -644,7 +646,7 @@
     el.innerHTML = `
       <table>
         <thead><tr>
-          <th class="col-name">Player</th>${qHdrs}<th>Score</th><th class="col-del"></th>
+          <th class="col-name">Player</th>${qHdrs}<th class="col-score">Score</th><th class="col-del"></th>
         </tr></thead>
         <tbody>
           ${playerRows}
