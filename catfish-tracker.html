@@ -437,12 +437,7 @@
     });
   }
 
-  function calcGroupScore(emojis) {
-    const n = emojis.reduce((s, e) => s + (e === CAT ? 1 : e === EGG ? 0.5 : 0), 0);
-    return `${n}/10`;
-  }
-
-  function calcIndividualScore(emojis) {
+  function calcScore(emojis) {
     const n = emojis.reduce((s, e) => s + (e === CAT ? 1 : e === EGG ? 0.5 : 0), 0);
     return `${n}/10`;
   }
@@ -532,7 +527,7 @@
     }
 
     const group  = calcGroupEmojis(entries);
-    const gScore = calcGroupScore(group);
+    const groupScore = calcScore(group);
     const qHdrs  = Array.from({ length: 10 }, (_, i) => `<th>Q${i + 1}</th>`).join('');
 
     // Players who are the only one to get a particular question right
@@ -556,7 +551,7 @@
       <tr>
         <td class="col-name">${esc(e.name)}${kings.has(e.name) ? ' 👑' : ''}${nerds.has(e.name) ? ' 🤓' : ''}${peaches.has(e.name) ? ' 🍑' : ''}</td>
         ${e.emojis.map(em => `<td>${em}</td>`).join('')}
-        <td class="col-score">${calcIndividualScore(e.emojis)}</td>
+        <td class="col-score">${calcScore(e.emojis)}</td>
         <td class="col-del">
           <button class="btn-sm-danger" title="Remove" onclick="deleteEntry('${key}', ${JSON.stringify(e.name).replace(/"/g, '&quot;')})">✕</button>
         </td>
@@ -572,7 +567,7 @@
           <tr class="group-row">
             <td class="col-name">Group</td>
             ${group.map(em => `<td>${em}</td>`).join('')}
-            <td class="col-score">${gScore}</td>
+            <td class="col-score">${groupScore}</td>
             <td></td>
           </tr>
         </tbody>
