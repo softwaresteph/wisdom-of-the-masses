@@ -20,6 +20,10 @@ app.get(['/', APP_PATH, APP_PATH + '/'].filter(Boolean), (req, res) => {
   res.type('html').send(html);
 });
 
+app.get(['/lib.js', APP_PATH + '/lib.js'].filter(Boolean), (req, res) => {
+  res.type('js').sendFile(path.join(__dirname, 'lib.js'));
+});
+
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 if (APP_PATH) {
