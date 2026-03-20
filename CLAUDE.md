@@ -7,6 +7,8 @@ cd docker && docker compose up
 ```
 App runs on port 3000.
 
+Alternatively, open `catfish-tracker.html` directly in a browser (no server needed). Data is stored in a local `scores.json` file. In browsers that support the File System Access API (e.g. Chrome/Edge), use the "📂 Open scores.json" button to open the file and save changes automatically. In other browsers, use the "📥 Import JSON" and "📤 Export JSON" buttons instead.
+
 ## Deployment
 Self-hosted via the `ghcr.io/softwaresteph/wisdom-of-the-masses:latest` image. Users should deploy using the included `docker/docker-compose.yml`.
 
