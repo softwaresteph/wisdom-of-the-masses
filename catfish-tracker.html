@@ -174,6 +174,12 @@
 
     .empty-msg { text-align: center; color: var(--muted); padding: 36px 16px; font-size: 0.9rem; }
 
+    /* Awards section */
+    .awards-table { border-collapse: collapse; width: 100%; }
+    .awards-table td { padding: 4px 15px; vertical-align: middle; border: none; text-align: start; }
+    .award-emoji { font-size: 1.4rem; width: 40px; }
+    .award-text { font-size: 0.95rem; color: var(--text); }
+
     /* Hidden import input */
     #import-input { display: none; }
 
@@ -280,6 +286,12 @@
     <button class="btn-sm-red" id="btn-del-day" onclick="deleteDay()" style="display:none">Delete day</button>
   </div>
   <div class="results-wrap" id="results"></div>
+</div>
+
+<!-- Awards -->
+<div class="card" id="awards-card" style="display:none">
+  <div class="card-title">Awards</div>
+  <div id="awards"></div>
 </div>
 
 <script>
@@ -477,7 +489,6 @@
   function parseScore(text) {
     const puzzleMatch = text.match(/#(\d+)/);
     if (!puzzleMatch) return { error: 'Could not find a puzzle number (like #626) in the pasted text.' };
-    const scoreMatch = text.match(/(\d+(?:\.5)?\/10)/);
     const emojis = [];
     for (const ch of text) {
       if (VALID_EMOJIS.has(ch)) emojis.push(ch);
@@ -485,7 +496,7 @@
     if (emojis.length !== 10) {
       return { error: `Found ${emojis.length} emoji${emojis.length === 1 ? '' : 's'} — expected exactly 10. Make sure you paste the complete share text.` };
     }
-    return { puzzle: parseInt(puzzleMatch[1], 10), score: scoreMatch ? scoreMatch[1] : null, emojis };
+    return { puzzle: parseInt(puzzleMatch[1], 10), emojis };
   }
 
   // --- Group logic ---
@@ -522,7 +533,7 @@
       return;
     }
 
-    currentData[key].push({ name, score: parsed.score, emojis: parsed.emojis });
+    currentData[key].push({ name, score: calcScore(parsed.emojis), emojis: parsed.emojis });
     currentData[key].sort((a, b) => a.name.localeCompare(b.name));
     await persist();
 
@@ -575,15 +586,19 @@
   function render() {
     const key = document.getElementById('puzzle-sel').value;
     const el  = document.getElementById('results');
+    const awardsCard = document.getElementById('awards-card');
+    const awardsEl   = document.getElementById('awards');
 
     if (!key) {
       el.innerHTML = '<div class="empty-msg">No scores yet — paste a score above to get started!</div>';
+      awardsCard.style.display = 'none';
       return;
     }
 
     const entries = currentData[key] || [];
     if (entries.length === 0) {
       el.innerHTML = '<div class="empty-msg">No scores for this puzzle.</div>';
+      awardsCard.style.display = 'none';
       return;
     }
 
@@ -606,6 +621,8 @@
     const bottomScore = scored.length ? Math.min(...scored.map(e => e.value)) : NaN;
     const kings = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === topScore).map(e => e.name)) : new Set();
     const peaches = entries.length > 1 && scored.length ? new Set(scored.filter(e => e.value === bottomScore).map(e => e.name)) : new Set();
+    // Kings take priority — no one can hold both crown and peach
+    for (const name of kings) { peaches.delete(name); }
 
     const playerRows = entries.map(e => {
       const nameJ = JSON.stringify(e.name).replace(/"/g, '&quot;');
@@ -623,7 +640,7 @@
           <tr data-edit-key="${esc(key)}" data-edit-name="${esc(e.name)}" class="editing-row">
             <td class="col-name"><input class="name-edit-input" type="text" value="${esc(e.name)}"></td>
             ${emojiCells}
-            <td class="col-score">${e.score || '?'}</td>
+            <td class="col-score">${calcScore(e.emojis)}</td>
             <td class="col-del">
               <button class="btn-sm-success" title="Save" onclick="saveRowEdit(${keyJ}, ${nameJ})">✓</button>
               <button class="btn-sm-cancel" title="Cancel" onclick="cancelRowEdit()">✕</button>
@@ -635,7 +652,7 @@
         <tr>
           <td class="col-name">${esc(e.name)}${badges}</td>
           ${e.emojis.map(em => `<td class="col-q">${em}</td>`).join('')}
-          <td class="col-score">${e.score || '?'}</td>
+          <td class="col-score">${calcScore(e.emojis)}</td>
           <td class="col-del">
             <button class="btn-sm" title="Edit" onclick="startRowEdit(${keyJ}, ${nameJ})">✏️</button>
             <button class="btn-sm-danger" title="Remove" onclick="deleteEntry(${keyJ}, ${nameJ})">✕</button>
@@ -658,6 +675,30 @@
           </tr>
         </tbody>
       </table>`;
+
+    if (entries.length > 1) {
+      const crownMsg = kings.size
+        ? `${formatNames(kings)} ${kings.size > 1 ? 'are' : 'is'} the wisest of the masses!`
+        : 'The throne sits empty — no one rose above the rest today.';
+      const nerdMsg = nerds.size
+        ? `${formatNames(nerds)} cracked it when no one else could`
+        : 'No one had a paw up on the rest today — everyone shared the same blind spots!';
+      const peachMsg = peaches.size
+        ? `${formatNames(peaches)} ${peaches.size > 1 ? 'are' : 'is'} the bottom of the barrel today!`
+        : 'No one is a rotten egg today!';
+
+      awardsEl.innerHTML = `
+        <table class="awards-table">
+          <tbody>
+            <tr><td class="award-emoji">👑</td><td class="award-text">${crownMsg}</td></tr>
+            <tr><td class="award-emoji">🤓</td><td class="award-text">${nerdMsg}</td></tr>
+            <tr><td class="award-emoji">🍑</td><td class="award-text">${peachMsg}</td></tr>
+          </tbody>
+        </table>`;
+      awardsCard.style.display = 'block';
+    } else {
+      awardsCard.style.display = 'none';
+    }
   }
 
   function showError(msg) {
@@ -675,6 +716,14 @@
 
   function esc(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatNames(set) {
+    const arr = [...set].map(n => `<strong>${esc(n)}</strong>`);
+    if (arr.length === 0) return '';
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+    return arr.slice(0, -1).join(', ') + ` and ${arr[arr.length - 1]}`;
   }
 
   // --- Row edit mode ---
